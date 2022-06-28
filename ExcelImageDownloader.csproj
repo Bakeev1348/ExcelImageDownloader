@@ -158,11 +158,11 @@
   <ItemGroup>
     <Compile Include="Commands.cs" />
     <Compile Include="Loaders.cs" />
-    <Compile Include="MainForm.cs">
+    <Compile Include="LoadForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
+    <Compile Include="LoadForm.Designer.cs">
+      <DependentUpon>LoadForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Panel.cs">
       <SubType>Component</SubType>
@@ -173,8 +173,8 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <EmbeddedResource Include="MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
+    <EmbeddedResource Include="LoadForm.resx">
+      <DependentUpon>LoadForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Panel.resx">
       <DependentUpon>Panel.cs</DependentUpon>

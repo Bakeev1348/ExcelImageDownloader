@@ -175,9 +175,10 @@ namespace ExcelImageDownloader
         {
             try
             {
-                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
-                //MainForm progressForm = new MainForm();
-                //progressForm.ShowDialog();
+                int picCount = this.picCount();
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
+                LoadForm loadForm = new LoadForm(picCount);
+                loadForm.Show();
                 for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
                 {
                     if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
@@ -204,11 +205,12 @@ namespace ExcelImageDownloader
                         }
                         //уменьшаем картинку обратно
                         currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                        //progressForm.perfStep();
+                        loadForm.perfStep();
                     }
                 }
                 Clipboard.Clear();
                 _logger.endLog();
+                loadForm.finishLoad();
             }
             catch (Exception ex)
             {
@@ -408,7 +410,10 @@ namespace ExcelImageDownloader
         {
             try
             {
-                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
+                int picCount = this.picCount();
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
+                LoadForm loadForm = new LoadForm(picCount);
+                loadForm.Show();
                 for (int i = 0; i < _picColmns.Length; ++i)
                 {
                     foreach (Excel.Range currentArt in _artRange)
@@ -429,10 +434,12 @@ namespace ExcelImageDownloader
                                 .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
                             continue;
                         }
+                        loadForm.perfStep();
                     }
                 }
                 Clipboard.Clear();
                 _logger.endLog();
+                loadForm.finishLoad();
             }
             catch (Exception ex)
             {

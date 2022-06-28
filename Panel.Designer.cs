@@ -77,6 +77,7 @@ namespace ExcelImageDownloader
             this.group5 = this.Factory.CreateRibbonGroup();
             this.button2 = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
+            this.button_test = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.group4.SuspendLayout();
@@ -200,7 +201,6 @@ namespace ExcelImageDownloader
             this.editBox1.ShowLabel = false;
             this.editBox1.SizeString = "111111111111111";
             this.editBox1.Text = null;
-            this.editBox1.TextChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.editBox1_TextChanged);
             // 
             // additTextColBut
             // 
@@ -361,6 +361,7 @@ namespace ExcelImageDownloader
             // 
             this.group5.Items.Add(this.button2);
             this.group5.Items.Add(this.button3);
+            this.group5.Items.Add(this.button_test);
             this.group5.Label = "Дополнительно";
             this.group5.Name = "group5";
             // 
@@ -375,6 +376,13 @@ namespace ExcelImageDownloader
             this.button3.Label = "Пронумеровать дубликаты";
             this.button3.Name = "button3";
             this.button3.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button3_Click);
+            // 
+            // button_test
+            // 
+            this.button_test.Label = "test";
+            this.button_test.Name = "button_test";
+            this.button_test.Visible = false;
+            this.button_test.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_test_Click);
             // 
             // Panel
             // 
@@ -490,6 +498,7 @@ namespace ExcelImageDownloader
         internal RibbonGroup group8;
         internal RibbonButton button_path;
         internal RibbonButton clearPathBut;
+        internal RibbonButton button_test;
     }
 
     partial class ThisRibbonCollection

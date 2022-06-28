@@ -450,9 +450,13 @@ namespace ExcelImageDownloader
             }
         }
 
-        private void editBox1_TextChanged(object sender, RibbonControlEventArgs e)
+        private void button_test_Click(object sender, RibbonControlEventArgs e)
         {
-
+            LoadForm form = new LoadForm(9);
+            form.Show();
+            form.perfStep();
+            form.perfStep();
+            form.perfStep();
         }
     }
 }
