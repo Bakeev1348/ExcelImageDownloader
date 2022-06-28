@@ -25,11 +25,17 @@ namespace ExcelImageDownloader
     }
 
 
-    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
     //Записывает в TXT файл изначальное количество картинок для загрузки,
-    //ошибки с указанием строк, количество по факту загруженных картинок
+    //ошибки с указанием строк и количество успешно загруженных картинок
     public class txtLogger : logger
     {
         private string _fileName;
@@ -45,7 +51,6 @@ namespace ExcelImageDownloader
 
         public txtLogger(string path, int count)
         {
-            //создает экземпляр и логгирует кол картинок, которые надо загрузить
             DateTime dateTime = DateTime.Now;
             string correctDateTime = dateTime.ToString().Replace(":", ".");
             _fileName = path + (char)92 + "Log " + correctDateTime
@@ -92,6 +97,16 @@ namespace ExcelImageDownloader
             this.Source = "Exception_Class_Samples";
         }
     }
+
+
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
     //Класс для загрузки картинок из объектов Excel.Shape с листа
     public class imgDownloader : loader
@@ -154,42 +169,51 @@ namespace ExcelImageDownloader
 
         //!!!ПРОВЕРКА ВВОДА
         //!!!КОМАНДЫ ВЫДЕЛЕНИЯ
-        //!!!ВЫБОР ПУТИ СОХР
         //
         //ОСНОВНОЙ публичный метод с циклом сохранения картинок
         public virtual void downloadImages()
         {
-            _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
-            for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
+            try
             {
-                if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
+                MainForm progressForm = new MainForm();
+                progressForm.ShowDialog();
+                for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
                 {
-                    //задаем картинку
-                    Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
-                    //задаем имя
-                    string name = getName(currentImg.TopLeftCell);
-                    //увеличиваем картинку
-                    currentImg.LockAspectRatio = Office.MsoTriState.msoTrue;
-                    currentImg.ScaleWidth(4f, Office.MsoTriState.msoFalse);
-                    //сохраняем
-                    try
+                    if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
                     {
-                        saveSingleImage(currentImg, name);
-                        _logger.logLoad();
+                        //задаем картинку
+                        Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
+                        //задаем имя
+                        string name = getName(currentImg.TopLeftCell);
+                        //увеличиваем картинку
+                        currentImg.LockAspectRatio = Office.MsoTriState.msoTrue;
+                        currentImg.ScaleWidth(4f, Office.MsoTriState.msoFalse);
+                        //сохраняем
+                        try
+                        {
+                            this.saveSingleImage(currentImg, name);
+                            _logger.logLoad();
+                        }
+                        catch (Exception ex)
+                        {
+                            Exception currentRowEx = new downloadImageException(currentImg.TopLeftCell.Row, ex);
+                            _logger.logError(currentRowEx);
+                            ThisAddIn.activeWorksheet.Cells[currentImg.TopLeftCell.Row, _artColmn.Column]
+                                    .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                        }
+                        //уменьшаем картинку обратно
+                        currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
+                        progressForm.perfStep();
                     }
-                    catch (Exception ex)
-                    {
-                        Exception currentRowEx = new downloadImageException(currentImg.TopLeftCell.Row, ex);
-                        _logger.logError(currentRowEx);
-                        ThisAddIn.activeWorksheet.Cells[currentImg.TopLeftCell.Row, _artColmn.Column]
-                            .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
-                    }
-                    //уменьшаем картинку обратно
-                    currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
                 }
+                Clipboard.Clear();
+                _logger.endLog();
             }
-            Clipboard.Clear();
-            _logger.endLog();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         //Считаем нужные картинки
@@ -198,7 +222,7 @@ namespace ExcelImageDownloader
             int count = 0;
             for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
             {
-                if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
+                if (this.checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
                 {
                     ++count;
                 }
@@ -239,7 +263,7 @@ namespace ExcelImageDownloader
         //Метод принимает ячейку с картинкой и задает имя для этой картинки
         protected virtual string getName(Excel.Range currentImgCell)
         {
-            string name = getTextValues(currentImgCell);
+            string name = this.getTextValues(currentImgCell);
 
             for (int iterator = 0; iterator < _punctuation.Length; ++iterator)
             {
@@ -382,31 +406,38 @@ namespace ExcelImageDownloader
         //ПЕРЕОПРЕДЕЛЁН
         public override void downloadImages()
         {
-            _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
-            for (int i = 0; i < _picColmns.Length; ++i)
+            try
             {
-                foreach (Excel.Range currentArt in _artRange)
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
+                for (int i = 0; i < _picColmns.Length; ++i)
                 {
-                    string name = getName(currentArt);
-                    if ((_downloadTypeIsNumbered) && (_picColmns.Length > 1)) name = name + (i + 1).ToString();
-                    Excel.Range pic = ThisAddIn.activeWorksheet.Cells[currentArt.Row, _picColmns[i].Column];
-                    try
+                    foreach (Excel.Range currentArt in _artRange)
                     {
-                        saveSingleImage(pic, name);
-                        _logger.logLoad();
-                    }
-                    catch (Exception ex)
-                    {
-                        Exception currentRowEx = new downloadImageException(pic.Row, ex);
-                        _logger.logError(currentRowEx);
-                        ThisAddIn.activeWorksheet.Cells[currentArt]
-                            .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
-                        continue;
+                        string name = getName(currentArt);
+                        if ((_downloadTypeIsNumbered) && (_picColmns.Length > 1)) name = name + (i + 1).ToString();
+                        Excel.Range pic = ThisAddIn.activeWorksheet.Cells[currentArt.Row, _picColmns[i].Column];
+                        try
+                        {
+                            saveSingleImage(pic, name);
+                            _logger.logLoad();
+                        }
+                        catch (Exception ex)
+                        {
+                            Exception currentRowEx = new downloadImageException(pic.Row, ex);
+                            _logger.logError(currentRowEx);
+                            ThisAddIn.activeWorksheet.Cells[currentArt]
+                                .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                            continue;
+                        }
                     }
                 }
+                Clipboard.Clear();
+                _logger.endLog();
             }
-            Clipboard.Clear();
-            _logger.endLog();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         //ПЕРЕОПРЕДЕЛЁН
