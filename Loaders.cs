@@ -21,6 +21,8 @@ namespace ExcelImageDownloader
     {
         void logError(Exception ex);
         void logLoad();
+        void log(string message);
+        int getNumber();
         void endLog();
     }
 
@@ -59,6 +61,7 @@ namespace ExcelImageDownloader
             stream.WriteLine($"Картинок для загрузки: {count.ToString()}");
             stream.WriteLine($"");
             stream.Close();
+            _notLoadedCount = 0;
             _loadedCount = 0;
         }
 
@@ -75,6 +78,13 @@ namespace ExcelImageDownloader
             ++_loadedCount;
         }
 
+        public void log(string message)
+        {
+            StreamWriter stream = new StreamWriter(_fileName, true);
+            stream.WriteLine(message);
+            stream.Close();
+        }
+
         public void endLog()
         {
             StreamWriter stream = new StreamWriter(_fileName, true);
@@ -85,6 +95,11 @@ namespace ExcelImageDownloader
             if (_notLoadedCount > 0) stream.WriteLine($"Не шикарно");
             else stream.WriteLine($"Шикарно");
             stream.Close();
+        }
+
+        public int getNumber()
+        {
+            return _loadedCount + _notLoadedCount;
         }
     }
 
@@ -175,6 +190,7 @@ namespace ExcelImageDownloader
         {
             try
             {
+                MessageBox.Show("1");
                 int picCount = this.picCount();
                 _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
                 LoadForm loadForm = new LoadForm(picCount);
@@ -183,6 +199,7 @@ namespace ExcelImageDownloader
                 {
                     if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
                     {
+                        loadForm.perfStep();
                         //задаем картинку
                         Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
                         //задаем имя
@@ -190,27 +207,38 @@ namespace ExcelImageDownloader
                         //увеличиваем картинку
                         currentImg.LockAspectRatio = Office.MsoTriState.msoTrue;
                         currentImg.ScaleWidth(4f, Office.MsoTriState.msoFalse);
+                        _logger.log("scale");
                         //сохраняем
                         try
                         {
                             this.saveSingleImage(currentImg, name);
                             _logger.logLoad();
+                            ThisAddIn.activeWorksheet.Cells[currentImg.TopLeftCell.Row, _artColmn.Column]
+                                    .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LawnGreen);
                         }
                         catch (Exception ex)
                         {
+                            _logger.log("catch");
                             Exception currentRowEx = new downloadImageException(currentImg.TopLeftCell.Row, ex);
+                            _logger.log("make ex");
                             _logger.logError(currentRowEx);
                             ThisAddIn.activeWorksheet.Cells[currentImg.TopLeftCell.Row, _artColmn.Column]
                                     .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                            _logger.log("color");
+                            //continue;
                         }
                         //уменьшаем картинку обратно
                         currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                        loadForm.perfStep();
+                        _logger.log("scale back");
+                        _logger.log(_logger.getNumber().ToString());
+                        _logger.log("");
                     }
                 }
                 Clipboard.Clear();
+                _logger.log("clipboard");
                 _logger.endLog();
                 loadForm.finishLoad();
+                _logger.log("form");
             }
             catch (Exception ex)
             {
@@ -425,6 +453,7 @@ namespace ExcelImageDownloader
                         {
                             saveSingleImage(pic, name);
                             _logger.logLoad();
+                            loadForm.perfStep();
                         }
                         catch (Exception ex)
                         {
@@ -432,9 +461,9 @@ namespace ExcelImageDownloader
                             _logger.logError(currentRowEx);
                             ThisAddIn.activeWorksheet.Cells[currentArt]
                                 .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                            loadForm.perfStep();
                             continue;
                         }
-                        loadForm.perfStep();
                     }
                 }
                 Clipboard.Clear();
