@@ -176,8 +176,8 @@ namespace ExcelImageDownloader
             try
             {
                 _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
-                MainForm progressForm = new MainForm();
-                progressForm.ShowDialog();
+                //MainForm progressForm = new MainForm();
+                //progressForm.ShowDialog();
                 for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
                 {
                     if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
@@ -204,7 +204,7 @@ namespace ExcelImageDownloader
                         }
                         //уменьшаем картинку обратно
                         currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                        progressForm.perfStep();
+                        //progressForm.perfStep();
                     }
                 }
                 Clipboard.Clear();
