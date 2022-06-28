@@ -156,7 +156,14 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="Commands.cs" />
     <Compile Include="Loaders.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Panel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -166,6 +173,9 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Panel.resx">
       <DependentUpon>Panel.cs</DependentUpon>
     </EmbeddedResource>

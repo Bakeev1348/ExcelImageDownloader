@@ -14,6 +14,15 @@ namespace ExcelImageDownloader
 {
     public partial class Panel
     {
+        //arrays of commands
+        private List<commandCellsToUpload> commandsCellsToUpload;
+
+        //initialise arrays of commands as new empty lists
+        private void Panel_Load(object sender, RibbonUIEventArgs e)
+        {
+            commandsCellsToUpload = new List<commandCellsToUpload>();
+        }
+
         //метод парсит строку и берёт из неё адреса ячеек 
         private Excel.Range[] getRanges(string addresses)
         {
@@ -38,7 +47,7 @@ namespace ExcelImageDownloader
                         }
                     }
                     string currentAddress = addresses.Remove(addresses.IndexOf(" "),
-                        addresses.Length - addresses.IndexOf(" "));
+                            addresses.Length - addresses.IndexOf(" "));
                     addRange[addRange.Length - 1] = ThisAddIn.activeWorksheet.get_Range(currentAddress);
                     addresses = addresses.Remove(0, addresses.IndexOf(" ") + 1);
                 } while (addresses.Length != 0);
@@ -49,71 +58,96 @@ namespace ExcelImageDownloader
         //метод возвращает экземпляр нужного загрузчика в зависимости от значения comboBox1
         private loader buildDownloader()
         {
-            //путь сохранения
-            string path = this.editBox3.Text;
-            //знаки препинания, которые не надо удалять из названия,
-            char[] charsToSave;
-            if (this.editBox9.Text != "") charsToSave = this.editBox9.Text.ToCharArray();
-            else charsToSave = null;
-            //тип загрузки
-            bool downloadTypeIsNumbered = this.checkBox1.Checked;
-            //задаем доп столбцы для названий
-            string addresses = this.editBox1.Text;
-            Excel.Range[] addRange = getRanges(addresses);
-            //задаем столбцы для картинок
-            addresses = this.editBox10.Text;
-            Excel.Range[] picRange = getRanges(addresses);
+            try
+            {
+                //путь сохранения
+                string path = this.editBox3.Text;
+                //знаки препинания, которые не надо удалять из названия,
+                char[] charsToSave;
+                if (this.editBox9.Text != "") charsToSave = this.editBox9.Text.ToCharArray();
+                else charsToSave = null;
+                //тип загрузки
+                bool downloadTypeIsNumbered = this.checkBox1.Checked;
+                //задаем доп столбцы для названий
+                string addresses = this.editBox1.Text;
+                Excel.Range[] addRange = getRanges(addresses);
+                //задаем столбцы для картинок
+                addresses = this.editBox10.Text;
+                Excel.Range[] picRange = getRanges(addresses);
 
-            loader downloader = new imgDownloader();
+                loader downloader = new imgDownloader();
 
-            //задаем значения, которые будут меняться в зависомости от типа загрузки
-            if (this.comboBox1.Text == "Картинки")
-            {
-                Excel.Range artCol = ThisAddIn.activeWorksheet.get_Range(this.editBox5.Text);
-                downloader = new imgDownloader(artCol, addRange, picRange, downloadTypeIsNumbered, path, charsToSave);
+                //задаем значения, которые будут меняться в зависомости от типа загрузки
+                if (this.comboBox1.Text == "Картинки")
+                {
+                    Excel.Range artCol = ThisAddIn.activeWorksheet.get_Range(this.editBox5.Text);
+                    downloader = new imgDownloader(artCol, addRange, picRange, downloadTypeIsNumbered, path, charsToSave);
+                }
+                else if (this.comboBox1.Text == "Фото ячеек")
+                {
+                    Excel.Range artRange = ThisAddIn.activeWorksheet.get_Range(this.editBox5.Text + ":" + this.editBox6.Text);
+                    downloader = new cellDownloader(artRange, addRange, picRange, downloadTypeIsNumbered, path, charsToSave);
+                }
+                else
+                {
+                    downloader = null;
+                }
+                return downloader;
             }
-            else if (this.comboBox1.Text == "Фото ячеек")
+            catch (Exception ex)
             {
-                Excel.Range artRange = ThisAddIn.activeWorksheet.get_Range(this.editBox5.Text + ":" + this.editBox6.Text);
-                downloader = new cellDownloader(artRange, addRange, picRange, downloadTypeIsNumbered, path, charsToSave);
+                MessageBox.Show(ex.Message);
+                return null;
             }
-            else
-            {
-                downloader = null;
-            }
-            return downloader;
         }
 
+        //!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!
         //кнопка СОХРАНИТЬ
         private void button_load_Click(object sender, RibbonControlEventArgs e)
         {
-            loader downloader = buildDownloader();
-            if (downloader != null) downloader.downloadImages();
-            else MessageBox.Show("Экземпляр загрузчика не создан");
+            const string message = "Выгрузить картинки ?";
+            const string caption = "Загрузка";
+            var result = MessageBox.Show(message, caption,
+                                         MessageBoxButtons.YesNo,
+                                         MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                loader downloader = buildDownloader();
+                if (downloader != null) downloader.downloadImages();
+            }
         }
 
         //метод приводит картинки к стандартному форматированию
         private void normalisePictures()
         {
-            string picToFormatName = $"C:{(char)92}Users{(char)92}user{(char)92}source{(char)92}repos{(char)92}VSTO{(char)92}picToFormat.gif";
-            Excel.Shape picToFormat = ThisAddIn.activeWorksheet.Shapes.AddPicture(picToFormatName, Office.MsoTriState.msoTrue, Office.MsoTriState.msoTrue, 10, 10, 100, 100);
-            picToFormat.Visible = Office.MsoTriState.msoTrue;
-            picToFormat.PickUp();
-
-            for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
+            try
             {
-                //задаем картинку
-                Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
-                //настраиваем сохранение пропорций
-                currentImg.LockAspectRatio = Office.MsoTriState.msoTrue;
-                //настраиваем перемещение и не изменение вместе с ячейкой
-                currentImg.Placement = Microsoft.Office.Interop.Excel.XlPlacement.xlMove;
-                //настраиваем границы изображения
-                currentImg.Apply();
+                string picToFormatName =
+                        $"C:{(char)92}Users{(char)92}user{(char)92}source{(char)92}repos{(char)92}VSTO{(char)92}picToFormat.gif";
+                Excel.Shape picToFormat = ThisAddIn.activeWorksheet.Shapes.AddPicture(picToFormatName,
+                        Office.MsoTriState.msoTrue, Office.MsoTriState.msoTrue, 10, 10, 100, 100);
+                picToFormat.Visible = Office.MsoTriState.msoTrue;
                 picToFormat.PickUp();
+                for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
+                {
+                    //задаем картинку
+                    Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
+                    //настраиваем сохранение пропорций
+                    currentImg.LockAspectRatio = Office.MsoTriState.msoTrue;
+                    //настраиваем перемещение и не изменение вместе с ячейкой
+                    currentImg.Placement = Microsoft.Office.Interop.Excel.XlPlacement.xlMove;
+                    //настраиваем границы изображения
+                    currentImg.Apply();
+                    picToFormat.PickUp();
+                }
+                picToFormat.Apply();
+                picToFormat.Delete();
             }
-            picToFormat.Apply();
-            picToFormat.Delete();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         //кнопка НАСТРОИТЬ КАРТИНКИ
@@ -125,41 +159,47 @@ namespace ExcelImageDownloader
         //метод добавляет нумерацию к повторяющимся значениям в заданном в интерфейсе диапазоне
         private void dublicates()
         {
-            Excel.Range rangeToClear = ThisAddIn.activeWorksheet.get_Range(this.editBox4.Text + (char)58 + this.editBox7.Text);
-            Excel.Range beginCell = rangeToClear.Item[1];
-
-            foreach (Excel.Range cell in rangeToClear)
+            try
             {
-                if (cell.Address == beginCell.Address) continue;
-
-                Excel.Range endCell = cell.Offset[-1, 0];
-                Excel.Range searchRange = ThisAddIn.activeWorksheet.get_Range(beginCell.Address + (char)58 + endCell.Address);
-                if (searchRange.Count == 1)
+                Excel.Range rangeToClear = ThisAddIn.activeWorksheet.get_Range(this.editBox4.Text + (char)58 + this.editBox7.Text);
+                Excel.Range beginCell = rangeToClear.Item[1];
+                foreach (Excel.Range cell in rangeToClear)
                 {
-                    if (searchRange.Value == cell.Value)
+                    if (cell.Address == beginCell.Address) continue;
+
+                    Excel.Range endCell = cell.Offset[-1, 0];
+                    Excel.Range searchRange = ThisAddIn.activeWorksheet.get_Range(beginCell.Address + (char)58 + endCell.Address);
+                    if (searchRange.Count == 1)
                     {
-                        cell.Value = cell.Value + " " + 1.ToString();
+                        if (searchRange.Value == cell.Value)
+                        {
+                            cell.Value = cell.Value + " " + 1.ToString();
+                            continue;
+                        }
+                        else continue;
+                    }
+                    Excel.Range result = searchRange.Find(cell.Value, searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
+
+                    if (result == null)
+                    {
                         continue;
                     }
-                    else continue;
-                }
-                Excel.Range result = searchRange.Find(cell.Value, searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
-
-                if (result == null)
-                {
-                    continue;
-                }
-                else
-                {
-                    int number = 0;
-                    do
+                    else
                     {
-                        ++number;
-                        result = searchRange.Find(cell.Value + " " + number.ToString(), searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
-                    } while (result != null);
+                        int number = 0;
+                        do
+                        {
+                            ++number;
+                            result = searchRange.Find(cell.Value + " " + number.ToString(), searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
+                        } while (result != null);
 
-                    cell.Value = cell.Value + " " + number.ToString();
+                        cell.Value = cell.Value + " " + number.ToString();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -173,33 +213,73 @@ namespace ExcelImageDownloader
         //кидает адрес в нужный editbox, выключает кнопку, чистит sender
         public void fillAddress()
         {
-            if (ThisAddIn.sender.getAddress() != null)
+            try
             {
-                if (ThisAddIn.sender.adding())
-                    ThisAddIn.sender.getEditBox().Text += ThisAddIn.sender.getAddress().Replace("$", "") + " ";
+                if (ThisAddIn.sender.getAddress() != null)
+                {
+                    if (ThisAddIn.sender.adding())
+                    {
+                        ThisAddIn.sender.getEditBox().Text += ThisAddIn.sender.getAddress().Replace("$", "") + " ";
+                    }
+                    else
+                    {
+                        if (ThisAddIn.sender.getEditBox().Text != "")
+                        {
+                            this.removeCommand(ThisAddIn.activeWorksheet.get_Range(ThisAddIn.sender.getEditBox().Text));
+                        }
+                        ThisAddIn.sender.getEditBox().Text = ThisAddIn.sender.getAddress().Replace("$", "");
+                    }
+                }
                 else
-                    ThisAddIn.sender.getEditBox().Text = ThisAddIn.sender.getAddress().Replace("$", "");
+                {
+                    MessageBox.Show("Выберите ячейку для добавления адреса", "Error");
+                }
+                ThisAddIn.sender.getToggleButton().Checked = false;
+                Excel.Range cell = ThisAddIn.activeWorksheet.get_Range(ThisAddIn.sender.getAddress());
+                commandCellsToUpload command = new commandCellsToUpload(cell, $"Загрузка картинок:{(char)10}{ThisAddIn.sender.getEditBox().Label}");
+                commandsCellsToUpload.Add(command);
+                ThisAddIn.sender.hasAddress -= this.fillAddress;
+                ThisAddIn.sender.disable();
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Выберите ячейку для добавления адреса", "Error");
+                MessageBox.Show(ex.Message);
             }
-            ThisAddIn.sender.getToggleButton().Checked = false;
-            ThisAddIn.sender.hasAddress -= this.fillAddress;
-            ThisAddIn.sender.disable();
         }
 
         //метод выключает все togglebutton, кроме вызвавшей его
         private void uncheckButtons(RibbonToggleButton thisButton)
         {
-            ThisAddIn.sender.disable();
-            ThisAddIn.sender.hasAddress -= this.fillAddress;
-            RibbonToggleButton[] buttons = { firstRangeDublicatesBut, lastRangeDublicatesBut,
-                firstMainArtBut, lastMainArtBut, additTextColBut, picColBut};
-            foreach (RibbonToggleButton button in buttons)
+            try
             {
-                if (button != thisButton) button.Checked = false;
+                ThisAddIn.sender.disable();
+                ThisAddIn.sender.hasAddress -= this.fillAddress;
+                RibbonToggleButton[] buttons = { firstRangeDublicatesBut, lastRangeDublicatesBut,
+                firstMainArtBut, lastMainArtBut, additTextColBut, picColBut};
+                foreach (RibbonToggleButton button in buttons)
+                {
+                    if (button != thisButton) button.Checked = false;
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        //method removes command from the list
+        private void removeCommand(Excel.Range cell)
+        {
+            ThisAddIn.thisApp.ScreenUpdating = false;
+            commandsCellsToUpload.ForEach(delegate (commandCellsToUpload command)
+            {
+                if (command.getCell().Address == cell.Address)
+                {
+                    command.reset();
+                    commandsCellsToUpload.Remove(command);
+                }
+            });
+            ThisAddIn.thisApp.ScreenUpdating = true;
         }
 
         //кнопки ДУБЛИКАТОВ
@@ -293,27 +373,86 @@ namespace ExcelImageDownloader
         //кнопки ОЧИСТКИ
         private void clearAdditTextColBut_Click(object sender, RibbonControlEventArgs e)
         {
-            this.editBox1.Text = "";
+            if (editBox1.Text != "")
+            {
+                Excel.Range[] ranges = this.getRanges(editBox1.Text);
+                foreach (Excel.Range range in ranges)
+                {
+                    this.removeCommand(range);
+                }
+                this.editBox1.Text = "";
+            }
         }
         private void clearPicColBut_Click(object sender, RibbonControlEventArgs e)
         {
-            this.editBox10.Text = "";
+            if (editBox10.Text != "")
+            {
+                Excel.Range[] ranges = this.getRanges(editBox10.Text);
+                foreach (Excel.Range range in ranges)
+                {
+                    this.removeCommand(range);
+                }
+                this.editBox10.Text = "";
+            }
         }
         private void clearLastMainArtBut_Click(object sender, RibbonControlEventArgs e)
         {
-            this.editBox6.Text = "";
+            if (editBox6.Text != "")
+            {
+                this.removeCommand(ThisAddIn.activeWorksheet.get_Range(editBox6.Text));
+                this.editBox6.Text = "";
+            }
         }
         private void clearFirstMainArtBut_Click(object sender, RibbonControlEventArgs e)
         {
-            this.editBox5.Text = "";
+            if (editBox5.Text != "")
+            {
+                this.removeCommand(ThisAddIn.activeWorksheet.get_Range(editBox5.Text));
+                this.editBox5.Text = "";
+            }
         }
         private void clearFirstRangeDublicatesBut_Click(object sender, RibbonControlEventArgs e)
         {
-            this.editBox4.Text = "";
+            if (editBox4.Text != "")
+            {
+                this.removeCommand(ThisAddIn.activeWorksheet.get_Range(editBox4.Text));
+                this.editBox4.Text = "";
+            }
         }
         private void clearLastRangeDublicatesBut_Click(object sender, RibbonControlEventArgs e)
         {
-            this.editBox7.Text = "";
+            if (editBox7.Text != "")
+            {
+                this.removeCommand(ThisAddIn.activeWorksheet.get_Range(editBox7.Text));
+                this.editBox7.Text = "";
+            }
+        }
+        private void clearPathBut_Click(object sender, RibbonControlEventArgs e)
+        {
+            this.editBox3.Text = "";
+        }
+
+        //Кнопка выбора пути сохранения
+        private void button_path_Click(object sender, RibbonControlEventArgs e)
+        {
+            try
+            {
+                FolderBrowserDialog folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+                DialogResult result = folderBrowserDialog1.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    this.editBox3.Text = folderBrowserDialog1.SelectedPath;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void editBox1_TextChanged(object sender, RibbonControlEventArgs e)
+        {
+
         }
     }
 }

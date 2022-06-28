@@ -60,7 +60,7 @@ namespace ExcelImageDownloader
         public void setAddress(string address)
         {
             _address = address;
-            hasAddress();
+            this.hasAddress();
         }
         public string getAddress()
         {
@@ -117,9 +117,16 @@ namespace ExcelImageDownloader
         //calls this.sender.setAddress that calls hasAddress event
         private void Application_SheetSelectionChange(object Sh, Excel.Range Target)
         {
-            if (sender.enabled())
+            try
             {
-                sender.setAddress(Target.Address);
+                if (sender.enabled())
+                {
+                    sender.setAddress(Target.Address);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 

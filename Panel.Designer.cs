@@ -58,10 +58,14 @@ namespace ExcelImageDownloader
             this.editBox10 = this.Factory.CreateRibbonEditBox();
             this.picColBut = this.Factory.CreateRibbonToggleButton();
             this.clearPicColBut = this.Factory.CreateRibbonButton();
-            this.group3 = this.Factory.CreateRibbonGroup();
+            this.group8 = this.Factory.CreateRibbonGroup();
             this.editBox3 = this.Factory.CreateRibbonEditBox();
+            this.button_path = this.Factory.CreateRibbonButton();
+            this.clearPathBut = this.Factory.CreateRibbonButton();
+            this.group3 = this.Factory.CreateRibbonGroup();
             this.editBox9 = this.Factory.CreateRibbonEditBox();
             this.comboBox1 = this.Factory.CreateRibbonComboBox();
+            this.checkBox1 = this.Factory.CreateRibbonCheckBox();
             this.group6 = this.Factory.CreateRibbonGroup();
             this.editBox4 = this.Factory.CreateRibbonEditBox();
             this.firstRangeDublicatesBut = this.Factory.CreateRibbonToggleButton();
@@ -71,7 +75,6 @@ namespace ExcelImageDownloader
             this.lastRangeDublicatesBut = this.Factory.CreateRibbonToggleButton();
             this.clearLastRangeDublicatesBut = this.Factory.CreateRibbonButton();
             this.group5 = this.Factory.CreateRibbonGroup();
-            this.checkBox1 = this.Factory.CreateRibbonCheckBox();
             this.button2 = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
@@ -80,6 +83,7 @@ namespace ExcelImageDownloader
             this.group10.SuspendLayout();
             this.group2.SuspendLayout();
             this.group9.SuspendLayout();
+            this.group8.SuspendLayout();
             this.group3.SuspendLayout();
             this.group6.SuspendLayout();
             this.group7.SuspendLayout();
@@ -93,6 +97,7 @@ namespace ExcelImageDownloader
             this.tab1.Groups.Add(this.group10);
             this.tab1.Groups.Add(this.group2);
             this.tab1.Groups.Add(this.group9);
+            this.tab1.Groups.Add(this.group8);
             this.tab1.Groups.Add(this.group3);
             this.tab1.Groups.Add(this.group6);
             this.tab1.Groups.Add(this.group7);
@@ -117,6 +122,7 @@ namespace ExcelImageDownloader
             this.group4.Items.Add(this.firstMainArtBut);
             this.group4.Items.Add(this.clearFirstMainArtBut);
             this.group4.Items.Add(this.label1);
+            this.group4.Label = "Артикулы";
             this.group4.Name = "group4";
             // 
             // editBox5
@@ -130,7 +136,7 @@ namespace ExcelImageDownloader
             // 
             // firstMainArtBut
             // 
-            this.firstMainArtBut.Label = "Артикулы";
+            this.firstMainArtBut.Label = "Указать";
             this.firstMainArtBut.Name = "firstMainArtBut";
             this.firstMainArtBut.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.firstMainArtBut_Click);
             // 
@@ -151,6 +157,7 @@ namespace ExcelImageDownloader
             this.group10.Items.Add(this.editBox6);
             this.group10.Items.Add(this.lastMainArtBut);
             this.group10.Items.Add(this.clearLastMainArtBut);
+            this.group10.Label = "Артикулы, последняя ячейка";
             this.group10.Name = "group10";
             // 
             // editBox6
@@ -165,7 +172,7 @@ namespace ExcelImageDownloader
             // 
             // lastMainArtBut
             // 
-            this.lastMainArtBut.Label = "Конец артикулов";
+            this.lastMainArtBut.Label = "Указать";
             this.lastMainArtBut.Name = "lastMainArtBut";
             this.lastMainArtBut.Visible = false;
             this.lastMainArtBut.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.lastMainArtBut_Click);
@@ -182,20 +189,22 @@ namespace ExcelImageDownloader
             this.group2.Items.Add(this.editBox1);
             this.group2.Items.Add(this.additTextColBut);
             this.group2.Items.Add(this.clearAdditTextColBut);
+            this.group2.Label = "Доп. столбцы текста";
             this.group2.Name = "group2";
             // 
             // editBox1
             // 
             this.editBox1.Enabled = false;
-            this.editBox1.Label = "Столбец 1";
+            this.editBox1.Label = "Доп столбец текста";
             this.editBox1.Name = "editBox1";
             this.editBox1.ShowLabel = false;
             this.editBox1.SizeString = "111111111111111";
             this.editBox1.Text = null;
+            this.editBox1.TextChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.editBox1_TextChanged);
             // 
             // additTextColBut
             // 
-            this.additTextColBut.Label = "Доп. столбцы текста";
+            this.additTextColBut.Label = "Указать";
             this.additTextColBut.Name = "additTextColBut";
             this.additTextColBut.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.additTextColBut_Click);
             // 
@@ -210,12 +219,13 @@ namespace ExcelImageDownloader
             this.group9.Items.Add(this.editBox10);
             this.group9.Items.Add(this.picColBut);
             this.group9.Items.Add(this.clearPicColBut);
+            this.group9.Label = "Столбцы картинок";
             this.group9.Name = "group9";
             // 
             // editBox10
             // 
             this.editBox10.Enabled = false;
-            this.editBox10.Label = "Столбец картинок 1";
+            this.editBox10.Label = "Столбец картинок";
             this.editBox10.Name = "editBox10";
             this.editBox10.ShowLabel = false;
             this.editBox10.SizeString = "111111111111111";
@@ -223,7 +233,7 @@ namespace ExcelImageDownloader
             // 
             // picColBut
             // 
-            this.picColBut.Label = "Столбцы картинок";
+            this.picColBut.Label = "Указать";
             this.picColBut.Name = "picColBut";
             this.picColBut.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.picColBut_Click);
             // 
@@ -233,19 +243,41 @@ namespace ExcelImageDownloader
             this.clearPicColBut.Name = "clearPicColBut";
             this.clearPicColBut.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.clearPicColBut_Click);
             // 
-            // group3
+            // group8
             // 
-            this.group3.Items.Add(this.editBox3);
-            this.group3.Items.Add(this.editBox9);
-            this.group3.Items.Add(this.comboBox1);
-            this.group3.Label = "Настройки";
-            this.group3.Name = "group3";
+            this.group8.Items.Add(this.editBox3);
+            this.group8.Items.Add(this.button_path);
+            this.group8.Items.Add(this.clearPathBut);
+            this.group8.Label = "Путь сохранения";
+            this.group8.Name = "group8";
             // 
             // editBox3
             // 
             this.editBox3.Label = "Адрес папки";
             this.editBox3.Name = "editBox3";
+            this.editBox3.ShowLabel = false;
+            this.editBox3.SizeString = "000000000000000000000000000000000000000";
             this.editBox3.Text = null;
+            // 
+            // button_path
+            // 
+            this.button_path.Label = "Указать путь";
+            this.button_path.Name = "button_path";
+            this.button_path.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_path_Click);
+            // 
+            // clearPathBut
+            // 
+            this.clearPathBut.Label = "Очистить";
+            this.clearPathBut.Name = "clearPathBut";
+            this.clearPathBut.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.clearPathBut_Click);
+            // 
+            // group3
+            // 
+            this.group3.Items.Add(this.editBox9);
+            this.group3.Items.Add(this.comboBox1);
+            this.group3.Items.Add(this.checkBox1);
+            this.group3.Label = "Настройки";
+            this.group3.Name = "group3";
             // 
             // editBox9
             // 
@@ -264,6 +296,11 @@ namespace ExcelImageDownloader
             this.comboBox1.Text = "Картинки";
             this.comboBox1.TextChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.comboBox1_TextChanged);
             // 
+            // checkBox1
+            // 
+            this.checkBox1.Label = "Несколько картинок на 1 позицию";
+            this.checkBox1.Name = "checkBox1";
+            // 
             // group6
             // 
             this.group6.Items.Add(this.editBox4);
@@ -275,7 +312,7 @@ namespace ExcelImageDownloader
             // editBox4
             // 
             this.editBox4.Enabled = false;
-            this.editBox4.Label = "П";
+            this.editBox4.Label = "Дубликаты, начало";
             this.editBox4.Name = "editBox4";
             this.editBox4.ShowLabel = false;
             this.editBox4.Text = null;
@@ -303,7 +340,7 @@ namespace ExcelImageDownloader
             // editBox7
             // 
             this.editBox7.Enabled = false;
-            this.editBox7.Label = "П";
+            this.editBox7.Label = "Дубликаты, конец";
             this.editBox7.Name = "editBox7";
             this.editBox7.ShowLabel = false;
             this.editBox7.Text = null;
@@ -322,16 +359,10 @@ namespace ExcelImageDownloader
             // 
             // group5
             // 
-            this.group5.Items.Add(this.checkBox1);
             this.group5.Items.Add(this.button2);
             this.group5.Items.Add(this.button3);
-            this.group5.Label = "Настройки";
+            this.group5.Label = "Дополнительно";
             this.group5.Name = "group5";
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.Label = "Несколько картинок на 1 позицию";
-            this.checkBox1.Name = "checkBox1";
             // 
             // button2
             // 
@@ -350,6 +381,7 @@ namespace ExcelImageDownloader
             this.Name = "Panel";
             this.RibbonType = "Microsoft.Excel.Workbook";
             this.Tabs.Add(this.tab1);
+            this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.Panel_Load);
             this.tab1.ResumeLayout(false);
             this.tab1.PerformLayout();
             this.group1.ResumeLayout(false);
@@ -362,6 +394,8 @@ namespace ExcelImageDownloader
             this.group2.PerformLayout();
             this.group9.ResumeLayout(false);
             this.group9.PerformLayout();
+            this.group8.ResumeLayout(false);
+            this.group8.PerformLayout();
             this.group3.ResumeLayout(false);
             this.group3.PerformLayout();
             this.group6.ResumeLayout(false);
@@ -402,7 +436,8 @@ namespace ExcelImageDownloader
                 this.lastMainArtBut.Visible = false;
                 this.clearLastMainArtBut.Visible = false;
                 this.label1.Visible = false;
-                this.firstMainArtBut.Label = "Артикулы";
+                this.group4.Label = "Артикулы";
+                this.editBox5.Label = "Столбец артикулов";
             }
             else if (this.comboBox1.Text == "Фото ячеек")
             {
@@ -413,7 +448,8 @@ namespace ExcelImageDownloader
                 this.clearFirstMainArtBut.Visible = true;
                 this.clearLastMainArtBut.Visible = true;
                 this.label1.Visible = false;
-                this.firstMainArtBut.Label = "Начало артикулов";
+                this.group4.Label = "Артикулы, первая ячейка";
+                this.editBox5.Label = "Первая ячейка артикулов";
             }
             else
             {
@@ -451,6 +487,9 @@ namespace ExcelImageDownloader
         internal RibbonButton clearFirstRangeDublicatesBut;
         internal RibbonButton clearLastRangeDublicatesBut;
         internal RibbonButton button_load;
+        internal RibbonGroup group8;
+        internal RibbonButton button_path;
+        internal RibbonButton clearPathBut;
     }
 
     partial class ThisRibbonCollection
