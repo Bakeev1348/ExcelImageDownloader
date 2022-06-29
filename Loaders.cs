@@ -221,7 +221,6 @@ namespace ExcelImageDownloader
                         }
                         //уменьшаем картинку обратно
                         currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                        _logger.log(_logger.getNumber().ToString());
                     }
                 }
                 Clipboard.Clear();
