@@ -21,6 +21,8 @@ namespace ExcelImageDownloader
     {
         void logError(Exception ex);
         void logLoad();
+        void log(string message);
+        int getNumber();
         void endLog();
     }
 
@@ -59,6 +61,7 @@ namespace ExcelImageDownloader
             stream.WriteLine($"Картинок для загрузки: {count.ToString()}");
             stream.WriteLine($"");
             stream.Close();
+            _notLoadedCount = 0;
             _loadedCount = 0;
         }
 
@@ -75,6 +78,13 @@ namespace ExcelImageDownloader
             ++_loadedCount;
         }
 
+        public void log(string message)
+        {
+            StreamWriter stream = new StreamWriter(_fileName, true);
+            stream.WriteLine(message);
+            stream.Close();
+        }
+
         public void endLog()
         {
             StreamWriter stream = new StreamWriter(_fileName, true);
@@ -85,6 +95,11 @@ namespace ExcelImageDownloader
             if (_notLoadedCount > 0) stream.WriteLine($"Не шикарно");
             else stream.WriteLine($"Шикарно");
             stream.Close();
+        }
+
+        public int getNumber()
+        {
+            return _loadedCount + _notLoadedCount;
         }
     }
 
@@ -175,13 +190,15 @@ namespace ExcelImageDownloader
         {
             try
             {
-                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
-                //MainForm progressForm = new MainForm();
-                //progressForm.ShowDialog();
+                int picCount = this.picCount();
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
+                LoadForm loadForm = new LoadForm(picCount);
+                loadForm.Show();
                 for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
                 {
                     if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
                     {
+                        loadForm.perfStep();
                         //задаем картинку
                         Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
                         //задаем имя
@@ -204,11 +221,12 @@ namespace ExcelImageDownloader
                         }
                         //уменьшаем картинку обратно
                         currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                        //progressForm.perfStep();
+                        _logger.log(_logger.getNumber().ToString());
                     }
                 }
                 Clipboard.Clear();
                 _logger.endLog();
+                loadForm.finishLoad();
             }
             catch (Exception ex)
             {
@@ -238,7 +256,7 @@ namespace ExcelImageDownloader
             {
                 foreach (Excel.Range checkRange in _picColmns)
                 {
-                    if (cell.Column == checkRange.Column) return true;
+                    if ((cell.Column == checkRange.Column) && (cell.Comment == null)) return true;
                 }
             }
             return false;
@@ -408,7 +426,10 @@ namespace ExcelImageDownloader
         {
             try
             {
-                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, this.picCount());
+                int picCount = this.picCount();
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
+                LoadForm loadForm = new LoadForm(picCount);
+                loadForm.Show();
                 for (int i = 0; i < _picColmns.Length; ++i)
                 {
                     foreach (Excel.Range currentArt in _artRange)
@@ -420,6 +441,7 @@ namespace ExcelImageDownloader
                         {
                             saveSingleImage(pic, name);
                             _logger.logLoad();
+                            loadForm.perfStep();
                         }
                         catch (Exception ex)
                         {
@@ -427,12 +449,14 @@ namespace ExcelImageDownloader
                             _logger.logError(currentRowEx);
                             ThisAddIn.activeWorksheet.Cells[currentArt]
                                 .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                            loadForm.perfStep();
                             continue;
                         }
                     }
                 }
                 Clipboard.Clear();
                 _logger.endLog();
+                loadForm.finishLoad();
             }
             catch (Exception ex)
             {
