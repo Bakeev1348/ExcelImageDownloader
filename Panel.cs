@@ -14,13 +14,35 @@ namespace ExcelImageDownloader
 {
     public partial class Panel
     {
-        //arrays of commands
+        //arrays
         private List<commandCellsToUpload> commandsCellsToUpload;
 
-        //initialise arrays of commands as new empty lists
+        //initialise array of commands as new empty lists and subscribe to clearCommands event from ThisAddin
         private void Panel_Load(object sender, RibbonUIEventArgs e)
         {
             commandsCellsToUpload = new List<commandCellsToUpload>();
+            ThisAddIn.clearCommands += this.clear;
+        }
+
+        //disable array of commands as new empty lists
+        private void clear()
+        {
+            if(commandsCellsToUpload.Count > 0)
+            {
+                ThisAddIn.thisApp.ScreenUpdating = false;
+                commandsCellsToUpload.ForEach(delegate (commandCellsToUpload command)
+                {
+                    command.reset();
+                });
+                ThisAddIn.thisWorkbook.Save();
+                ThisAddIn.thisApp.ScreenUpdating = true;
+            }
+            RibbonEditBox[] editBoxes = { editBox4, editBox7, editBox5, editBox6, editBox1, editBox10 };
+            foreach(var editBox in editBoxes)
+            {
+                editBox.Text = "";
+            }
+
         }
 
         //метод парсит строку и берёт из неё адреса ячеек 

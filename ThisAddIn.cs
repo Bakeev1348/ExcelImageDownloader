@@ -82,6 +82,8 @@ namespace ExcelImageDownloader
         public static Excel.Worksheet activeWorksheet;
         public static Excel.Workbook thisWorkbook;
         public static Excel.Application thisApp;
+        public delegate void voidMethod();
+        public static event voidMethod clearCommands;
         public static sender sender;
 
         //initialises thisWorkbook and activeWorksheet
@@ -107,6 +109,7 @@ namespace ExcelImageDownloader
                 ThisAddIn.activeWorksheet = (Excel.Worksheet)Application.ActiveSheet;
                 ThisAddIn.thisWorkbook = (Excel.Workbook)Application.ActiveWorkbook;
                 sender = new sender();
+                clearCommands();
             }
             catch (Exception ex)
             {
@@ -140,6 +143,14 @@ namespace ExcelImageDownloader
         }
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
+            try
+            {
+                clearCommands();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         #region Код, автоматически созданный
