@@ -190,7 +190,6 @@ namespace ExcelImageDownloader
         {
             try
             {
-                MessageBox.Show("1");
                 int picCount = this.picCount();
                 _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
                 LoadForm loadForm = new LoadForm(picCount);
@@ -207,38 +206,27 @@ namespace ExcelImageDownloader
                         //увеличиваем картинку
                         currentImg.LockAspectRatio = Office.MsoTriState.msoTrue;
                         currentImg.ScaleWidth(4f, Office.MsoTriState.msoFalse);
-                        _logger.log("scale");
                         //сохраняем
                         try
                         {
                             this.saveSingleImage(currentImg, name);
                             _logger.logLoad();
-                            ThisAddIn.activeWorksheet.Cells[currentImg.TopLeftCell.Row, _artColmn.Column]
-                                    .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LawnGreen);
                         }
                         catch (Exception ex)
                         {
-                            _logger.log("catch");
                             Exception currentRowEx = new downloadImageException(currentImg.TopLeftCell.Row, ex);
-                            _logger.log("make ex");
                             _logger.logError(currentRowEx);
                             ThisAddIn.activeWorksheet.Cells[currentImg.TopLeftCell.Row, _artColmn.Column]
                                     .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
-                            _logger.log("color");
-                            //continue;
                         }
                         //уменьшаем картинку обратно
                         currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                        _logger.log("scale back");
                         _logger.log(_logger.getNumber().ToString());
-                        _logger.log("");
                     }
                 }
                 Clipboard.Clear();
-                _logger.log("clipboard");
                 _logger.endLog();
                 loadForm.finishLoad();
-                _logger.log("form");
             }
             catch (Exception ex)
             {
@@ -268,7 +256,7 @@ namespace ExcelImageDownloader
             {
                 foreach (Excel.Range checkRange in _picColmns)
                 {
-                    if (cell.Column == checkRange.Column) return true;
+                    if ((cell.Column == checkRange.Column) && (cell.Comment == null)) return true;
                 }
             }
             return false;
