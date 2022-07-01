@@ -17,28 +17,40 @@ namespace ExcelImageDownloader
         //arrays
         private List<commandCellsToUpload> _commandsCellsToUpload;
         private RibbonToggleButton[] _buttons;
-        private RibbonEditBox[] _editBoxesSave; 
+        private RibbonEditBox[] _editBoxesSave;
+        private RibbonEditBox[] _editBoxesDubl;
 
         //initialise array of commands as new empty list and subscribe to clearCommands event from ThisAddin
         private void Panel_Load(object sender, RibbonUIEventArgs e)
         {
-            _commandsCellsToUpload = new List<commandCellsToUpload>();
-            ThisAddIn.clearCommands += this.clear;
+            try
+            {
+                _commandsCellsToUpload = new List<commandCellsToUpload>();
+                ThisAddIn.clearCommands += this.clear;
 
-            _buttons = new RibbonToggleButton[6];
-            _buttons[0] = firstRangeDublicatesBut;
-            _buttons[1] = lastRangeDublicatesBut;
-            _buttons[2] = firstMainArtBut;
-            _buttons[3] = additTextColBut;
-            _buttons[4] = lastMainArtBut;
-            _buttons[5] = picColBut;
+                _buttons = new RibbonToggleButton[6];
+                _buttons[0] = firstRangeDublicatesBut;
+                _buttons[1] = lastRangeDublicatesBut;
+                _buttons[2] = firstMainArtBut;
+                _buttons[3] = additTextColBut;
+                _buttons[4] = lastMainArtBut;
+                _buttons[5] = picColBut;
 
-            _editBoxesSave = new RibbonEditBox[5];
-            _editBoxesSave[0] = editBox6;
-            _editBoxesSave[2] = editBox5;
-            _editBoxesSave[4] = editBox1;
-            _editBoxesSave[5] = editBox10;
-            _editBoxesSave[6] = editBox3;
+                _editBoxesSave = new RibbonEditBox[5];
+                _editBoxesSave[0] = editBox1;
+                _editBoxesSave[1] = editBox6;
+                _editBoxesSave[2] = editBox5;
+                _editBoxesSave[3] = editBox10;
+                _editBoxesSave[4] = editBox3;
+
+                _editBoxesDubl = new RibbonEditBox[2];
+                _editBoxesDubl[0] = editBox4;
+                _editBoxesDubl[1] = editBox7;
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         //check interface
@@ -48,8 +60,8 @@ namespace ExcelImageDownloader
             string message = null;
             bool flag = false;
             int iterator;
-            if (comboBox1.Text == "Картинки") iterator = 1;
-            else iterator = 0;
+            if (comboBox1.Text == "Картинки") iterator = 2;
+            else iterator = 1;
 
             for(int i = iterator; i < _editBoxesSave.Length; ++i)
             {
@@ -82,6 +94,10 @@ namespace ExcelImageDownloader
                 ThisAddIn.thisApp.ScreenUpdating = true;
             }
             foreach(RibbonEditBox editBox in _editBoxesSave)
+            {
+                editBox.Text = "";
+            }
+            foreach (RibbonEditBox editBox in _editBoxesDubl)
             {
                 editBox.Text = "";
             }
@@ -120,6 +136,7 @@ namespace ExcelImageDownloader
             return addRange;
         }
 
+        //15
         //метод возвращает экземпляр нужного загрузчика в зависимости от значения comboBox1
         private loader buildDownloader()
         {
@@ -229,18 +246,29 @@ namespace ExcelImageDownloader
         //метод добавляет нумерацию к повторяющимся значениям в заданном в интерфейсе диапазоне
         private void dublicates()
         {
-            if((editBox4.Text!="") || (editBox7.Text != ""))
+            string message = null;
+            foreach(RibbonEditBox currentBox in _editBoxesDubl)
+            {
+                if(currentBox.Text == "")
+                {
+                    message += $"Необходимо заполнить: {currentBox.Label}{(char)10}";
+                }
+            }
+            
+            if (message == null)
             {
                 try
                 {
-                    Excel.Range rangeToClear = ThisAddIn.activeWorksheet.get_Range(this.editBox4.Text + (char)58 + this.editBox7.Text);
+                    Excel.Range rangeToClear = ThisAddIn.activeWorksheet.get_Range(this.editBox4.Text + 
+                            (char)58 + this.editBox7.Text);
                     Excel.Range beginCell = rangeToClear.Item[1];
                     foreach (Excel.Range cell in rangeToClear)
                     {
                         if (cell.Address == beginCell.Address) continue;
 
                         Excel.Range endCell = cell.Offset[-1, 0];
-                        Excel.Range searchRange = ThisAddIn.activeWorksheet.get_Range(beginCell.Address + (char)58 + endCell.Address);
+                        Excel.Range searchRange = ThisAddIn.activeWorksheet.get_Range(beginCell.Address + 
+                                (char)58 + endCell.Address);
                         if (searchRange.Count == 1)
                         {
                             if (searchRange.Value == cell.Value)
@@ -250,7 +278,8 @@ namespace ExcelImageDownloader
                             }
                             else continue;
                         }
-                        Excel.Range result = searchRange.Find(cell.Value, searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
+                        Excel.Range result = searchRange.Find(cell.Value, searchRange.Item[searchRange.Count], 
+                                Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
 
                         if (result == null)
                         {
@@ -262,7 +291,9 @@ namespace ExcelImageDownloader
                             do
                             {
                                 ++number;
-                                result = searchRange.Find(cell.Value + " " + number.ToString(), searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
+                                result = searchRange.Find(cell.Value + " " + number.ToString(), 
+                                        searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, 
+                                        Excel.XlLookAt.xlWhole);
                             } while (result != null);
 
                             cell.Value = cell.Value + " " + number.ToString();
@@ -276,7 +307,7 @@ namespace ExcelImageDownloader
             }
             else
             {
-                MessageBox.Show("Заполните поля для нумерации дубликатов");
+                MessageBox.Show(message);
             }
         }
 
