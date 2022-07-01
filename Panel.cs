@@ -15,7 +15,7 @@ namespace ExcelImageDownloader
     public partial class Panel
     {
         //arrays
-        private List<commandCellsToUpload> _commandsCellsToUpload;
+        private List <commandCellsToUpload> _commandsCellsToUpload;
         private RibbonToggleButton[] _buttons;
         private RibbonEditBox[] _editBoxesSave;
         private RibbonEditBox[] _editBoxesDubl;
@@ -56,7 +56,6 @@ namespace ExcelImageDownloader
         //check interface
         private string checkElements()
         {
-            
             string message = null;
             bool flag = false;
             int iterator;
@@ -79,7 +78,6 @@ namespace ExcelImageDownloader
             return message;
         }
 
-
         //disable array of commands as new empty lists
         private void clear()
         {
@@ -101,7 +99,6 @@ namespace ExcelImageDownloader
             {
                 editBox.Text = "";
             }
-
         }
 
         //метод парсит строку и берёт из неё адреса ячеек 
@@ -211,7 +208,8 @@ namespace ExcelImageDownloader
             try
             {
                 string picToFormatName =
-                        $"C:{(char)92}Users{(char)92}user{(char)92}source{(char)92}repos{(char)92}VSTO{(char)92}picToFormat.gif";
+                        $"C:{(char)92}Users{(char)92}user{(char)92}source{(char)92}repos" +
+                        $"{(char)92}VSTO{(char)92}picToFormat.gif";
                 Excel.Shape picToFormat = ThisAddIn.activeWorksheet.Shapes.AddPicture(picToFormatName,
                         Office.MsoTriState.msoTrue, Office.MsoTriState.msoTrue, 10, 10, 100, 100);
                 picToFormat.Visible = Office.MsoTriState.msoTrue;
