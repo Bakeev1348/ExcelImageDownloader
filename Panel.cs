@@ -15,30 +15,73 @@ namespace ExcelImageDownloader
     public partial class Panel
     {
         //arrays
-        private List<commandCellsToUpload> commandsCellsToUpload;
+        private List<commandCellsToUpload> _commandsCellsToUpload;
+        private RibbonToggleButton[] _buttons;
+        private RibbonEditBox[] _editBoxesSave; 
 
-        //initialise array of commands as new empty lists and subscribe to clearCommands event from ThisAddin
+        //initialise array of commands as new empty list and subscribe to clearCommands event from ThisAddin
         private void Panel_Load(object sender, RibbonUIEventArgs e)
         {
-            commandsCellsToUpload = new List<commandCellsToUpload>();
+            _commandsCellsToUpload = new List<commandCellsToUpload>();
             ThisAddIn.clearCommands += this.clear;
+
+            _buttons = new RibbonToggleButton[6];
+            _buttons[0] = firstRangeDublicatesBut;
+            _buttons[1] = lastRangeDublicatesBut;
+            _buttons[2] = firstMainArtBut;
+            _buttons[3] = additTextColBut;
+            _buttons[4] = lastMainArtBut;
+            _buttons[5] = picColBut;
+
+            _editBoxesSave = new RibbonEditBox[5];
+            _editBoxesSave[0] = editBox6;
+            _editBoxesSave[2] = editBox5;
+            _editBoxesSave[4] = editBox1;
+            _editBoxesSave[5] = editBox10;
+            _editBoxesSave[6] = editBox3;
         }
+
+        //check interface
+        private string checkElements()
+        {
+            
+            string message = null;
+            bool flag = false;
+            int iterator;
+            if (comboBox1.Text == "Картинки") iterator = 1;
+            else iterator = 0;
+
+            for(int i = iterator; i < _editBoxesSave.Length; ++i)
+            {
+                if (_editBoxesSave[i].Text == "")
+                {
+                    if(flag) message += $"{(char)10}- {_editBoxesSave[i].Label}";
+                    else
+                    {
+                        flag = true;
+                        message = $"Необходимо заполнить:{(char)10}";
+                        message += $"{(char)10}- {_editBoxesSave[i].Label}";
+                    }
+                }
+            }
+            return message;
+        }
+
 
         //disable array of commands as new empty lists
         private void clear()
         {
-            if(commandsCellsToUpload.Count > 0)
+            if(_commandsCellsToUpload.Count > 0)
             {
                 ThisAddIn.thisApp.ScreenUpdating = false;
-                commandsCellsToUpload.ForEach(delegate (commandCellsToUpload command)
+                _commandsCellsToUpload.ForEach(delegate (commandCellsToUpload command)
                 {
                     command.reset();
                 });
                 ThisAddIn.thisWorkbook.Save();
                 ThisAddIn.thisApp.ScreenUpdating = true;
             }
-            RibbonEditBox[] editBoxes = { editBox4, editBox7, editBox5, editBox6, editBox1, editBox10 };
-            foreach(var editBox in editBoxes)
+            foreach(RibbonEditBox editBox in _editBoxesSave)
             {
                 editBox.Text = "";
             }
@@ -128,15 +171,20 @@ namespace ExcelImageDownloader
         //кнопка СОХРАНИТЬ
         private void button_load_Click(object sender, RibbonControlEventArgs e)
         {
-            const string message = "Выгрузить картинки ?";
+            const string text = "Выгрузить картинки ?";
             const string caption = "Загрузка";
-            var result = MessageBox.Show(message, caption,
+            var result = MessageBox.Show(text, caption,
                                          MessageBoxButtons.YesNo,
                                          MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
-                loader downloader = buildDownloader();
-                if (downloader != null) downloader.downloadImages();
+                string message = this.checkElements();
+                if(message == null)
+                {
+                    loader downloader = buildDownloader();
+                    if (downloader != null) downloader.downloadImages();
+                }
+                else MessageBox.Show(message);
             }
         }
 
@@ -181,47 +229,54 @@ namespace ExcelImageDownloader
         //метод добавляет нумерацию к повторяющимся значениям в заданном в интерфейсе диапазоне
         private void dublicates()
         {
-            try
+            if((editBox4.Text!="") || (editBox7.Text != ""))
             {
-                Excel.Range rangeToClear = ThisAddIn.activeWorksheet.get_Range(this.editBox4.Text + (char)58 + this.editBox7.Text);
-                Excel.Range beginCell = rangeToClear.Item[1];
-                foreach (Excel.Range cell in rangeToClear)
+                try
                 {
-                    if (cell.Address == beginCell.Address) continue;
-
-                    Excel.Range endCell = cell.Offset[-1, 0];
-                    Excel.Range searchRange = ThisAddIn.activeWorksheet.get_Range(beginCell.Address + (char)58 + endCell.Address);
-                    if (searchRange.Count == 1)
+                    Excel.Range rangeToClear = ThisAddIn.activeWorksheet.get_Range(this.editBox4.Text + (char)58 + this.editBox7.Text);
+                    Excel.Range beginCell = rangeToClear.Item[1];
+                    foreach (Excel.Range cell in rangeToClear)
                     {
-                        if (searchRange.Value == cell.Value)
+                        if (cell.Address == beginCell.Address) continue;
+
+                        Excel.Range endCell = cell.Offset[-1, 0];
+                        Excel.Range searchRange = ThisAddIn.activeWorksheet.get_Range(beginCell.Address + (char)58 + endCell.Address);
+                        if (searchRange.Count == 1)
                         {
-                            cell.Value = cell.Value + " " + 1.ToString();
+                            if (searchRange.Value == cell.Value)
+                            {
+                                cell.Value = cell.Value + " " + 1.ToString();
+                                continue;
+                            }
+                            else continue;
+                        }
+                        Excel.Range result = searchRange.Find(cell.Value, searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
+
+                        if (result == null)
+                        {
                             continue;
                         }
-                        else continue;
-                    }
-                    Excel.Range result = searchRange.Find(cell.Value, searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
-
-                    if (result == null)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        int number = 0;
-                        do
+                        else
                         {
-                            ++number;
-                            result = searchRange.Find(cell.Value + " " + number.ToString(), searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
-                        } while (result != null);
+                            int number = 0;
+                            do
+                            {
+                                ++number;
+                                result = searchRange.Find(cell.Value + " " + number.ToString(), searchRange.Item[searchRange.Count], Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlWhole);
+                            } while (result != null);
 
-                        cell.Value = cell.Value + " " + number.ToString();
+                            cell.Value = cell.Value + " " + number.ToString();
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Заполните поля для нумерации дубликатов");
             }
         }
 
@@ -259,7 +314,7 @@ namespace ExcelImageDownloader
                 ThisAddIn.sender.getToggleButton().Checked = false;
                 Excel.Range cell = ThisAddIn.activeWorksheet.get_Range(ThisAddIn.sender.getAddress());
                 commandCellsToUpload command = new commandCellsToUpload(cell, $"Загрузка картинок:{(char)10}{ThisAddIn.sender.getEditBox().Label}");
-                commandsCellsToUpload.Add(command);
+                _commandsCellsToUpload.Add(command);
                 ThisAddIn.sender.hasAddress -= this.fillAddress;
                 ThisAddIn.sender.disable();
             }
@@ -276,9 +331,7 @@ namespace ExcelImageDownloader
             {
                 ThisAddIn.sender.disable();
                 ThisAddIn.sender.hasAddress -= this.fillAddress;
-                RibbonToggleButton[] buttons = { firstRangeDublicatesBut, lastRangeDublicatesBut,
-                firstMainArtBut, lastMainArtBut, additTextColBut, picColBut};
-                foreach (RibbonToggleButton button in buttons)
+                foreach (RibbonToggleButton button in _buttons)
                 {
                     if (button != thisButton) button.Checked = false;
                 }
@@ -293,12 +346,12 @@ namespace ExcelImageDownloader
         private void removeCommand(Excel.Range cell)
         {
             ThisAddIn.thisApp.ScreenUpdating = false;
-            commandsCellsToUpload.ForEach(delegate (commandCellsToUpload command)
+            _commandsCellsToUpload.ForEach(delegate (commandCellsToUpload command)
             {
                 if (command.getCell().Address == cell.Address)
                 {
                     command.reset();
-                    commandsCellsToUpload.Remove(command);
+                    _commandsCellsToUpload.Remove(command);
                 }
             });
             ThisAddIn.thisApp.ScreenUpdating = true;

@@ -253,7 +253,7 @@ namespace ExcelImageDownloader
             // 
             // editBox3
             // 
-            this.editBox3.Label = "Адрес папки";
+            this.editBox3.Label = "Путь сохранения";
             this.editBox3.Name = "editBox3";
             this.editBox3.ShowLabel = false;
             this.editBox3.SizeString = "000000000000000000000000000000000000000";
