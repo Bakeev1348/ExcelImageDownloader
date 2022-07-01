@@ -342,7 +342,8 @@ namespace ExcelImageDownloader
                 }
                 ThisAddIn.sender.getToggleButton().Checked = false;
                 Excel.Range cell = ThisAddIn.activeWorksheet.get_Range(ThisAddIn.sender.getAddress());
-                commandCellsToUpload command = new commandCellsToUpload(cell, $"Загрузка картинок:{(char)10}{ThisAddIn.sender.getEditBox().Label}");
+                commandCellsToUpload command = new commandCellsToUpload(cell, 
+                        $"Загрузка картинок:{(char)10}{ThisAddIn.sender.getEditBox().Label}");
                 _commandsCellsToUpload.Add(command);
                 ThisAddIn.sender.hasAddress -= this.fillAddress;
                 ThisAddIn.sender.disable();
