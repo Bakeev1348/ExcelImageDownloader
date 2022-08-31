@@ -130,6 +130,7 @@ namespace ExcelImageDownloader
         protected Excel.Range[] _additionalColmns;
         protected Excel.Range[] _picColmns;
         protected bool _downloadTypeIsNumbered;
+        protected bool _deleteLoaded;
         protected string _path;
         protected char[] _punctuation;
         protected logger _logger;
@@ -140,18 +141,20 @@ namespace ExcelImageDownloader
             _additionalColmns = null;
             _picColmns = null;
             _downloadTypeIsNumbered = false;
+            _deleteLoaded = false;
             _path = null;
             _punctuation = null;
             _logger = null;
         }
 
         public imgDownloader(Excel.Range artColmn, Excel.Range[] additionalColmns, Excel.Range[] picColmns,
-            bool downloadType, string path, char[] charsToSave)
+            bool downloadType,bool deleteLoaded, string path, char[] charsToSave)
         {
             _artColmn = artColmn;
             _additionalColmns = additionalColmns;
             _picColmns = picColmns;
             _downloadTypeIsNumbered = downloadType;
+            _deleteLoaded = deleteLoaded;
             _path = path;
 
             //Создаём массив символов, которые нужно удалить из названия
@@ -191,6 +194,7 @@ namespace ExcelImageDownloader
             try
             {
                 int picCount = this.picCount();
+                bool deleted = false;
                 _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
                 LoadForm loadForm = new LoadForm(picCount);
                 loadForm.Show();
@@ -211,6 +215,11 @@ namespace ExcelImageDownloader
                         {
                             this.saveSingleImage(currentImg, name);
                             _logger.logLoad();
+                            if (_deleteLoaded)
+                            {
+                                currentImg.Delete();
+                                deleted = true;
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -220,7 +229,7 @@ namespace ExcelImageDownloader
                                     .Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
                         }
                         //уменьшаем картинку обратно
-                        currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
+                        if(!deleted) currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
                     }
                 }
                 Clipboard.Clear();
@@ -332,7 +341,10 @@ namespace ExcelImageDownloader
                     Exception ex = new Exception(message);
                     throw ex;
                 }
-                else imageToSave.Save(name + ".gif", myImageCodecInfo, myEncoderParameters);
+                else
+                {
+                    imageToSave.Save(name + ".gif", myImageCodecInfo, myEncoderParameters);
+                }   
             }
             else
             {
