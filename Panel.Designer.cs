@@ -78,6 +78,7 @@ namespace ExcelImageDownloader
             this.button2 = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
             this.button_test = this.Factory.CreateRibbonButton();
+            this.checkBox_delete = this.Factory.CreateRibbonCheckBox();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.group4.SuspendLayout();
@@ -362,6 +363,7 @@ namespace ExcelImageDownloader
             this.group5.Items.Add(this.button2);
             this.group5.Items.Add(this.button3);
             this.group5.Items.Add(this.button_test);
+            this.group5.Items.Add(this.checkBox_delete);
             this.group5.Label = "Дополнительно";
             this.group5.Name = "group5";
             // 
@@ -383,6 +385,11 @@ namespace ExcelImageDownloader
             this.button_test.Name = "button_test";
             this.button_test.Visible = false;
             this.button_test.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_test_Click);
+            // 
+            // checkBox_delete
+            // 
+            this.checkBox_delete.Label = "Удалять загруженные картинки";
+            this.checkBox_delete.Name = "checkBox_delete";
             // 
             // Panel
             // 
@@ -499,6 +506,7 @@ namespace ExcelImageDownloader
         internal RibbonButton button_path;
         internal RibbonButton clearPathBut;
         internal RibbonButton button_test;
+        internal RibbonCheckBox checkBox_delete;
     }
 
     partial class ThisRibbonCollection

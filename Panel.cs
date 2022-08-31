@@ -147,6 +147,7 @@ namespace ExcelImageDownloader
                 else charsToSave = null;
                 //тип загрузки
                 bool downloadTypeIsNumbered = this.checkBox1.Checked;
+                bool deleteLoaded = checkBox_delete.Checked;
                 //задаем доп столбцы для названий
                 string addresses = this.editBox1.Text;
                 Excel.Range[] addRange = getRanges(addresses);
@@ -160,7 +161,7 @@ namespace ExcelImageDownloader
                 if (this.comboBox1.Text == "Картинки")
                 {
                     Excel.Range artCol = ThisAddIn.activeWorksheet.get_Range(this.editBox5.Text);
-                    downloader = new imgDownloader(artCol, addRange, picRange, downloadTypeIsNumbered, path, charsToSave);
+                    downloader = new imgDownloader(artCol, addRange, picRange, downloadTypeIsNumbered, deleteLoaded, path, charsToSave);
                 }
                 else if (this.comboBox1.Text == "Фото ячеек")
                 {

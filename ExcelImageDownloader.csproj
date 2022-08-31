@@ -211,6 +211,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="ExcelImageDownloader_2_TemporaryKey.pfx" />
     <None Include="ExcelImageDownloader_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -239,10 +240,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>ExcelImageDownloader_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>ExcelImageDownloader_2_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>869EAF6C1CBD88302F19B70A3DDF0C6F1306F26A</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>230280B05D8DEDDC87CEE2568352A8BB25C7441F</ManifestCertificateThumbprint>
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
