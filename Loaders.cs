@@ -29,9 +29,7 @@ namespace ExcelImageDownloader
 
 
 
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -193,18 +191,17 @@ namespace ExcelImageDownloader
         {
             try
             {
-                int picCount = this.picCount();
+                Excel.Shape[] loadedPictures = this.getLoadedPictures();
+                int loadPicCount = loadedPictures.Count();
                 bool deleted = false;
-                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, picCount);
-                LoadForm loadForm = new LoadForm(picCount);
+                _logger = new txtLogger(ThisAddIn.thisWorkbook.Path, loadPicCount);
+                LoadForm loadForm = new LoadForm(loadPicCount);
                 loadForm.Show();
-                for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
+                for (int i = 0; i < loadedPictures.Count(); ++i)
                 {
-                    if (checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
-                    {
                         loadForm.perfStep();
                         //задаем картинку
-                        Excel.Shape currentImg = ThisAddIn.activeWorksheet.Shapes.Item(i);
+                        Excel.Shape currentImg = loadedPictures[i];
                         //задаем имя
                         string name = getName(currentImg.TopLeftCell);
                         //увеличиваем картинку
@@ -217,6 +214,7 @@ namespace ExcelImageDownloader
                             _logger.logLoad();
                             if (_deleteLoaded)
                             {
+                                loadedPictures[i] = null;
                                 currentImg.Delete();
                                 deleted = true;
                             }
@@ -230,7 +228,6 @@ namespace ExcelImageDownloader
                         }
                         //уменьшаем картинку обратно
                         if(!deleted) currentImg.ScaleWidth(0.25f, Office.MsoTriState.msoFalse);
-                    }
                 }
                 Clipboard.Clear();
                 _logger.endLog();
@@ -243,7 +240,7 @@ namespace ExcelImageDownloader
         }
 
         //Считаем нужные картинки
-        protected virtual int picCount()
+        protected virtual Excel.Shape[] getLoadedPictures()
         {
             int count = 0;
             for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
@@ -253,7 +250,17 @@ namespace ExcelImageDownloader
                     ++count;
                 }
             }
-            return count;
+            Excel.Shape[] loadedPictures = new Excel.Shape[count];
+
+            for (int i = 1; i <= ThisAddIn.activeWorksheet.Shapes.Count; ++i)
+            {
+                if (this.checkImage(ThisAddIn.activeWorksheet.Shapes.Item(i).TopLeftCell))
+                {
+                    loadedPictures[i-1] = ThisAddIn.activeWorksheet.Shapes.Item(i);
+                }
+            }
+
+            return loadedPictures;
         }
 
         //Проверяем, там ли картинка
@@ -476,7 +483,7 @@ namespace ExcelImageDownloader
         }
 
         //ПЕРЕОПРЕДЕЛЁН
-        protected override int picCount()
+        protected int picCount()
         {
             int count = _artRange.Count * _picColmns.Length;
             return count;
