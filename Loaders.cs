@@ -154,33 +154,7 @@ namespace ExcelImageDownloader
             _downloadTypeIsNumbered = downloadType;
             _deleteLoaded = deleteLoaded;
             _path = path;
-
-            //Создаём массив символов, которые нужно удалить из названия
-            char[] charsToDelete = new char[66];
-            int index = 0;
-            //Добавление всех символов, кроме букв и цифр, в массив через итерацию по ascii
-            for (int iterator = 0; iterator < 128; ++iterator)
-            {
-                if ((iterator >= 48 && iterator <= 57) || (iterator >= 65 && iterator <= 90) || (iterator >= 97 && iterator <= 122))
-                {
-                    continue;
-                }
-                else
-                {
-                    charsToDelete[index] = (char)iterator;
-                    ++index;
-                }
-            }
-            _punctuation = charsToDelete;
-            if (charsToSave != null)
-            {
-                string temp = new string(_punctuation);
-                for (int iterator = 0; iterator < charsToSave.Length; ++iterator)
-                {
-                    temp = temp.Replace($"{charsToSave[iterator]}", "");
-                }
-                _punctuation = temp.ToCharArray();
-            }
+            _punctuation = charsToSave;
         }
 
         //!!!ПРОВЕРКА ВВОДА
@@ -297,13 +271,22 @@ namespace ExcelImageDownloader
         protected virtual string getName(Excel.Range currentImgCell)
         {
             string name = this.getTextValues(currentImgCell);
+            string tempStr = name;
 
-            for (int iterator = 0; iterator < _punctuation.Length; ++iterator)
+            for(int i = 0;i < name.Length;++i)
             {
-                name = name.Replace($"{_punctuation[iterator]}", "");
+                if (char.IsLetterOrDigit(name[i])) continue;
+                else 
+                {
+                    bool flag = true;
+                    foreach(char c in _punctuation)
+                    {
+                        if ((int)name[i] == (int)c) flag = false;
+                    }
+                    if(flag) tempStr = tempStr.Replace($"{name[i]}", "");
+                }
             }
-
-            name = _path + (char)92 + name;
+            name = _path + (char)92 + tempStr;
             return name;
         }
 
